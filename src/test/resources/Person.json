@@ -1,0 +1,41 @@
+{
+  "firstName": "Peter",
+  "lastName": "Nilson",
+  "personId": "12345",
+  "dob": "01/01/1990",
+  "streetName": "Sodertorp",
+  "houseNumber": "123",
+  "city": "Malmö",
+  "country": "Sweden",
+  "countryCode": "SE",
+  "phone": [
+    "+46783946273",
+    "01248745759",
+    "+49763445673",
+    "01234567890"
+  ],
+  "bank": {
+    "bankName": "xyz",
+    "accountNumber": "1234567890",
+    "branch": "6712",
+    "debitCard": {
+      "number": "7653 8273 9384",
+      "paymentNetwork": "VISA"
+    },
+    "creditCard": {
+      "number": "1234 8273 9384",
+      "paymentNetwork": "Mastero"
+    }
+  },
+  "education": {
+    "school": {
+      "name": "xyz school",
+      "address": "Dalaplan Malmo 21744 Sweden"
+    },
+    "collage": {
+      "name": "Abc collage",
+      "address": "Abc Malmö 72863 Sweden",
+      "degree": "MS"
+    }
+  }
+}

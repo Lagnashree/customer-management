@@ -1,0 +1,383 @@
+openapi: 3.0.0
+servers:
+  - url: "http://localhost:8080"
+info:
+  description: API to manage customer data
+  version: 1.0.0
+  title: Customer Management API
+  contact:
+    name: Lagnashree Dey
+    email: lagnashreedey@gmail.com
+paths:
+  /getDetails/person/{personId}/request/{requestType}:
+    get:
+      summary: Get customer details for a given personId and requestType. The response structure varies based on value of requestType.
+      description: Get customer details for a given personId and requestType
+      operationId: getCustomerDetails
+      parameters:
+        - $ref: "#/components/parameters/personId"
+        - $ref: "#/components/parameters/requestType"
+      responses:
+        '200':
+          $ref: "#/components/responses/getDetailResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        "400":
+          $ref: "#/components/responses/InputValidationError"
+  /updateDetails/bank:
+    patch:
+      summary: update customer bank details with provided request Body
+      description: update customer bank details with provided request Body
+      operationId: updateCustomerBankDeatils
+      responses:
+        "200":
+          $ref: "#/components/responses/UpdateCustommerSuccessResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - personId
+                - newBankDetails
+                - creditCards
+              properties:
+                personId:
+                  $ref: "#/components/schemas/personId"
+                newBankDetails:
+                  $ref: "#/components/schemas/newBankDetails"
+                creditCards:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/creditCard"
+        description: Customer bank details update request body
+        required: true
+components:
+  parameters:
+    personId:
+      name: personId
+      in: path
+      required: true
+      description: personId of the customer
+      schema:
+        $ref: "#/components/schemas/personId"
+    requestType:
+      name: requestType
+      in: path
+      required: true
+      description: type of the requested information
+      schema:
+        $ref: "#/components/schemas/requestType"
+  responses:
+    getDetailResponse:
+      description: Success
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: '#/components/schemas/PersonalDetails'
+              - $ref: '#/components/schemas/BankDetails'
+              - $ref: '#/components/schemas/Qualifications'
+    InternalServerError:
+      description: Internal server error.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    InputValidationError:
+      description: Input validation error.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    UpdateCustommerSuccessResponse:
+      description: complex object that customer data after patch operation for bank details
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UpdatedCustomer"
+  schemas:
+    personId:
+      description: status of the API invocation
+      type: string
+      example: Success
+    requestType:
+      description: status of the API invocation
+      type: string
+      example: personalDetails
+      enum:
+        - personalDetails
+        - bankDetails
+        - qualifications
+    bankDetails:
+      type: object
+      properties:
+        bankName:
+          type: string
+        accountNumber:
+          type: string
+        branch:
+          type: string
+        debitCard:
+          type: object
+          properties:
+            number:
+              type: string
+            paymentNetwork:
+              type: string
+        creditCard:
+          type: array
+          items:
+            type: object
+            properties:
+              number:
+                type: string
+              paymentNetwork:
+                type: string
+            required:
+              - number
+              - paymentNetwork
+          required:
+            - bankName
+            - accountNumber
+            - branch
+            - debitCard
+            - creditCard
+    newBankDetails:
+      type: object
+      properties:
+        name:
+          type: string
+        account:
+          type: string
+        branch:
+          type: string
+        debitCard:
+          type: object
+          properties:
+            number:
+              type: string
+            paymentNetwork:
+              type: string
+          required:
+            - name
+            - account
+            - branch
+            - debitCard
+    creditCard:
+      type: object
+      properties:
+        number:
+          type: string
+        paymentNetwork:
+          type: string
+    educationDetails:
+      type: object
+      properties:
+        school:
+          type: object
+          properties:
+            name:
+              type: string
+            address:
+              type: string
+          required:
+            - name
+            - address
+        collage:
+          type: object
+          properties:
+            name:
+              type: string
+            address:
+              type: string
+            degree:
+              type: string
+          required:
+            - name
+            - address
+            - degree
+      required:
+        - school
+        - collage
+    ErrorResponse:
+      type: object
+      properties:
+        description:
+          type: string
+          example: error description
+        status:
+          type: number
+          example: FAIL
+        timestamp:
+          type: string
+          example: 13/47/2024 09:47:17
+    PersonalDetails:
+      type: object
+      properties:
+        name:
+          type: string
+        personId:
+          type: string
+        dob:
+          type: string
+          format: date
+        address:
+          type: object
+          properties:
+            street:
+              type: string
+            houseNumber:
+              type: string
+            city:
+              type: string
+            country:
+              type: string
+            countryCode:
+              type: string
+          required:
+            - street
+            - houseNumber
+            - city
+            - country
+            - countryCode
+        contact:
+          type: array
+          items:
+            type: object
+            properties:
+              code:
+                type: string
+              number:
+                type: string
+            required:
+              - code
+              - number
+      required:
+        - name
+        - personId
+        - dob
+        - address
+        - contact
+    BankDetails:
+      type: object
+      properties:
+        personId:
+          type: string
+        name:
+          type: string
+        bank:
+          type: object
+          properties:
+            name:
+              type: string
+            accountNumber:
+              type: string
+            branchCode:
+              type: string
+          required:
+            - name
+            - accountNumber
+            - branchCode
+        card:
+          type: array
+          items:
+            type: object
+            properties:
+              cardType:
+                type: string
+              cardNumber:
+                type: string
+              paymentNetwork:
+                type: string
+            required:
+              - cardType
+              - cardNumber
+              - paymentNetwork
+      required:
+        - personId
+        - name
+        - bank
+        - card
+    UpdatedCustomer:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        personId:
+          type: string
+        dob:
+          type: string
+          format: date
+        streetName:
+          type: string
+        houseNumber:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        countryCode:
+          type: string
+        phone:
+          type: array
+          items:
+            type: string
+        bank:
+          $ref: "#/components/schemas/bankDetails"
+        education:
+          $ref: "#/components/schemas/educationDetails"
+      required:
+        - firstName
+        - lastName
+        - personId
+        - dob
+        - streetName
+        - houseNumber
+        - city
+        - country
+        - countryCode
+        - phone
+        - bank
+        - education
+    Qualifications:
+      type: object
+      properties:
+        name:
+          type: string
+        qualifications:
+          type: object
+          properties:
+            school:
+              type: object
+              properties:
+                name:
+                  type: string
+                address:
+                  type: string
+              required:
+                - name
+                - address
+            collage:
+              type: object
+              properties:
+                name:
+                  type: string
+                address:
+                  type: string
+                degree:
+                  type: string
+              required:
+                - name
+                - address
+                - degree
+          required:
+            - school
+            - collage
+      required:
+        - name
+        - qualifications
