@@ -221,7 +221,7 @@ public class CustomerManagementControllerTest {
 
         CustomerDTO customerObj = CustomerDTO.builder()
                 .firstName("John")
-                .lastName("Doe")
+                .lastName("Nilson")
                 .personId("12345")
                 .dob("01/01/1990")
                 .streetName("Sodertorp")
@@ -267,12 +267,26 @@ public class CustomerManagementControllerTest {
                         .content(requestJson)
                         .contentType(MediaType.APPLICATION_JSON)
                 )
-                .andExpect(status().isOk())
+                                .andExpect(status().isOk())
                 .andDo(print())
                 .andExpect(jsonPath("$.firstName").value("John"))
-                .andExpect(jsonPath("$.lastName").value("Doe"))
+                .andExpect(jsonPath("$.lastName").value("Nilson"))
                 .andExpect(jsonPath("$.phone",hasSize(4)))
-                .andExpect(jsonPath("$.bank.creditCard",hasSize(2)));
+                .andExpect(jsonPath("$.bank.creditCard",hasSize(2)))
+                .andExpect(jsonPath("$.bank.bankName").value("qwerty"))
+                .andExpect(jsonPath("$.bank.branch").value("8765"))
+                .andExpect(jsonPath("$.bank.debitCard.number").value("0987 4189 9384"))
+                .andExpect(jsonPath("$.bank.debitCard.paymentNetwork").value("Amex"))
+                .andExpect(jsonPath("$.lastName").value("Doe"))
+                .andExpect(jsonPath("$.lastName").value("Doe"))
+                .andExpect(jsonPath("$.lastName").value("Doe"))
+                .andExpect(jsonPath("$.education.school.name").value("xyz school"))
+                .andExpect(jsonPath("$.education.school.address").value("Dalaplan Malmo 21744 Sweden"))
+                .andExpect(jsonPath("$.education.school.*",hasSize(2)))
+                .andExpect(jsonPath("$.education.college.*",hasSize(3)))
+                .andExpect(jsonPath("$.education.college.name").value("Abc collage"))
+                .andExpect(jsonPath("$.education.college.address").value("Abc Malmö 72863 Sweden"))
+                .andExpect(jsonPath("$.education.college.degree").value("MS"));
 
     }
 }
