@@ -14,7 +14,7 @@ import java.util.Map;
 @RestControllerAdvice
 public class CustomExceptionHandler {
     @ExceptionHandler(value= InvalidInputException.class)
-    public ResponseEntity<CustomErrorResponse> handleInvalidPersonidException(InvalidInputException e) {
+    public ResponseEntity<CustomErrorResponse> handleInvalidInputException(InvalidInputException e) {
         CustomErrorResponse error = CustomErrorResponse.builder()
                 .description( e.getMessage())
                 .status("FAIL")
