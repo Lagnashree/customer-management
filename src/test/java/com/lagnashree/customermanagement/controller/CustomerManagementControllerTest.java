@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.lagnashree.customermanagement.dto.*;
 import com.lagnashree.customermanagement.exception.InvalidInputException;
 import com.lagnashree.customermanagement.service.CustomerManagementService;
+import com.lagnashree.customermanagement.exception.CustomExceptionHandler;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -41,7 +42,9 @@ public class CustomerManagementControllerTest {
     @Before
     public void setUp(){
         MockitoAnnotations.openMocks(this);
-        this.mockMvc= MockMvcBuilders.standaloneSetup(customerManagementController).build();
+        this.mockMvc= MockMvcBuilders.standaloneSetup(customerManagementController)
+                .setControllerAdvice(new CustomExceptionHandler())
+                .build();
     }
     @Test
     public void customerManagementController_getCustomerDetails_personalDetails_success() throws Exception{
@@ -81,11 +84,11 @@ public class CustomerManagementControllerTest {
 
 
     }
-    /*@Test
+    @Test
     public void customerManagementController_getCustomerDetails_personalDetails_failure_invalidPersonId() throws Exception{
-        String personId = "12345";
+        String personId = "123456";
         String requestType = "personalDetails";
-        Mockito.when(customerManagementService.getCustomerPersonalDetails(Mockito.any())).thenThrow(InvalidInputException.class);
+        Mockito.when(customerManagementService.getCustomerPersonalDetails(Mockito.any())).thenThrow(new InvalidInputException("invalid person id"));
         mockMvc.perform(get("/getDetails/person/{personId}/request/{requestType}",personId, requestType)
                 )
                 .andExpect(status().isBadRequest())
@@ -107,7 +110,7 @@ public class CustomerManagementControllerTest {
                 .andExpect(jsonPath("$.status").value("FAIL"))
                 .andExpect(jsonPath("$.description").value("invalid requestType value"));
 
-    }*/
+    }
     @Test
     public void customerManagementController_getCustomerDetails_bankDetails_success() throws Exception{
         BankDetailDTO bankDetail = BankDetailDTO.builder()
