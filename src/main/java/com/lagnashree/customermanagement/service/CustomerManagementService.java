@@ -2,11 +2,10 @@ package com.lagnashree.customermanagement.service;
 import com.lagnashree.customermanagement.dto.*;
 import com.lagnashree.customermanagement.exception.InternalException;
 import com.lagnashree.customermanagement.exception.InvalidInputException;
+import com.lagnashree.customermanagement.model.Customer;
 import com.lagnashree.customermanagement.repository.CustomerManagementRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,24 +26,24 @@ public class CustomerManagementService {
      */
     public PersonalDetailDTO getCustomerPersonalDetails(String personId) throws InvalidInputException, InternalException  {
         try {
-            JSONObject customerObj = customerManagementRepository.readCustomerData();
-            JSONArray phoneArray = (JSONArray) customerObj.get("phone");
-            if(!personId.equals(customerObj.get("personId"))) {
+            Customer customerObj = customerManagementRepository.readCustomerData();
+
+            if(!personId.equals(customerObj.getPersonId())) {
                 log.error(String.format("Invalid person id: %s", personId));
                 throw new InvalidInputException("invalid person id");
             }
             else {
                 PersonalDetailDTO personalDTO = PersonalDetailDTO.builder()
-                        .name( customerObj.get("firstName") + " " + (String) customerObj.get("lastName"))
-                        .personId((String) customerObj.get("personId"))
-                        .dob((String) customerObj.get("dob"))
+                        .name( customerObj.getFirstName() + " " + customerObj.getLastName())
+                        .personId((String) customerObj.getPersonId())
+                        .dob((String) customerObj.getDob())
                         .address(PersonalDetailDTO.Address.builder()
-                                .street((String) customerObj.get("streetName"))
-                                .houseNumber((String) customerObj.get("houseNumber"))
-                                .city((String) customerObj.get("city"))
-                                .country((String) customerObj.get("country"))
-                                .countryCode((String) customerObj.get("countryCode")).build())
-                        .contact(generateContacts(phoneArray))
+                                .street((String) customerObj.getStreetName())
+                                .houseNumber((String) customerObj.getHouseNumber())
+                                .city((String) customerObj.getCity())
+                                .country((String) customerObj.getCountry())
+                                .countryCode((String) customerObj.getCountryCode()).build())
+                        .contact(generateContacts(customerObj.getPhone()))
                         .build();
 
                 return personalDTO;
@@ -64,24 +63,24 @@ public class CustomerManagementService {
      * @parameter JSONArray object which contains phone numbers of a customer.
      * @return List of PersonalDetailDTO.Contact
      */
-    private static List<PersonalDetailDTO.Contact> generateContacts(JSONArray phoneArray) {
+    private static List<PersonalDetailDTO.Contact> generateContacts(List<String> phoneArray) {
 
         List<PersonalDetailDTO.Contact> contactList = new ArrayList<>();
 
         for (int i = 0; i < phoneArray.size(); i++) {
             String phoneNumber = (String) phoneArray.get(i);
-               if (phoneNumber.startsWith("+")) {
-                   int splitIndex=3;
-                   String countryCode = phoneNumber.substring(0, splitIndex);
-                   String numberWithoutCountryCode = phoneNumber.substring(splitIndex);
-                   PersonalDetailDTO.Contact contact = PersonalDetailDTO.Contact.builder()
-                           .code(countryCode)
-                           .number(numberWithoutCountryCode)
-                           .build();
-                   contactList.add(contact);
-                }
-
+            if (phoneNumber.startsWith("+")) {
+                int splitIndex=3;
+                String countryCode = phoneNumber.substring(0, splitIndex);
+                String numberWithoutCountryCode = phoneNumber.substring(splitIndex);
+                PersonalDetailDTO.Contact contact = PersonalDetailDTO.Contact.builder()
+                        .code(countryCode)
+                        .number(numberWithoutCountryCode)
+                        .build();
+                contactList.add(contact);
             }
+
+        }
         return contactList;
     }
 
@@ -94,32 +93,32 @@ public class CustomerManagementService {
      */
     public BankDetailDTO getCustomerBankDetails(String personId) throws InvalidInputException, InternalException {
         try{
-            JSONObject customerObj = customerManagementRepository.readCustomerData();
-            JSONObject bankObject = (JSONObject) customerObj.get("bank");
+            Customer customerObj = customerManagementRepository.readCustomerData();
+            /*Bank bankObject = (JSONObject) customerObj.get("bank");
             JSONObject debitCardObject = (JSONObject) bankObject.get("debitCard");
-            JSONObject creditcardObject = (JSONObject) bankObject.get("creditCard");
-            if(!personId.equals(customerObj.get("personId"))) {
+            JSONObject creditcardObject = (JSONObject) bankObject.get("creditCard");*/
+            if(!personId.equals(customerObj.getPersonId())) {
                 log.error(String.format("Invalid person id: %s", personId));
                 throw new InvalidInputException("invalid person id");
             }
             else {
                 BankDetailDTO bankDetailDTO = BankDetailDTO.builder()
-                        .name((String) customerObj.get("firstName") + " " + (String) customerObj.get("lastName"))
-                        .personId((String) customerObj.get("personId"))
+                        .name( customerObj.getFirstName() + " " +  customerObj.getLastName())
+                        .personId(customerObj.getPersonId())
                         .bank(BankDetailDTO.Bank.builder()
-                                .name((String) bankObject.get("bankName"))
-                                .accountNumber((String) bankObject.get("accountNumber"))
-                                .branchCode((String) bankObject.get("branch")).build())
+                                .name( customerObj.getBank().getBankName())
+                                .accountNumber( customerObj.getBank().getAccountNumber())
+                                .branchCode((String) customerObj.getBank().getBranch()).build())
                         .card(List.of(
                                 BankDetailDTO.Card.builder()
                                         .cardType("Credit")
-                                        .cardNumber((String) creditcardObject.get("number"))
-                                        .paymentNetwork((String) creditcardObject.get("paymentNetwork"))
+                                        .cardNumber(customerObj.getBank().getCreditCard().getNumber())
+                                        .paymentNetwork(customerObj.getBank().getCreditCard().getPaymentNetwork())
                                         .build(),
                                 BankDetailDTO.Card.builder()
                                         .cardType("Debit")
-                                        .cardNumber((String) debitCardObject.get("number"))
-                                        .paymentNetwork((String) debitCardObject.get("paymentNetwork"))
+                                        .cardNumber((String) customerObj.getBank().getDebitCard().getNumber())
+                                        .paymentNetwork((String) customerObj.getBank().getDebitCard().getPaymentNetwork())
                                         .build()
                         )).build();
                 return bankDetailDTO;
@@ -142,41 +141,38 @@ public class CustomerManagementService {
      * @throws InvalidInputException If the provided personId does not match any exsiting data
      * @throws InternalException when there any other king of error while parsing etc.
      */
-   public QualificationDTO getCustomerQualificationsDetails(String personId) throws InvalidInputException, InternalException {
-       try{
-           JSONObject customerObj = customerManagementRepository.readCustomerData();
-           JSONObject educationObject = (JSONObject) customerObj.get("education");
-           JSONObject schoolObject = (JSONObject) educationObject.get("school");
-           JSONObject collageObject = (JSONObject) educationObject.get("collage");
-           if(!personId.equals(customerObj.get("personId"))) {
-               log.error(String.format("Invalid person id: %s", personId));
-               throw new InvalidInputException("invalid person id");
-           }
-           else {
-               QualificationDTO qualificationDTO = QualificationDTO.builder()
-                       .name(customerObj.get("firstName") + " " + customerObj.get("lastName"))
-                       .qualifications(QualificationDTO.Qualifications.builder()
-                               .school(QualificationDTO.School.builder()
-                                       .name((String) schoolObject.get("name"))
-                                       .address((String) schoolObject.get("address"))
-                                       .build())
-                               .college(QualificationDTO.College.builder()
-                                       .name((String) collageObject.get("name"))
-                                       .address((String) collageObject.get("address"))
-                                       .degree((String) collageObject.get("degree"))
-                                       .build())
-                               .build()).build();
+    public QualificationDTO getCustomerQualificationsDetails(String personId) throws InvalidInputException, InternalException {
+        try{
+            Customer customerObj = customerManagementRepository.readCustomerData();
+            if(!personId.equals(customerObj.getPersonId())) {
+                log.error(String.format("Invalid person id: %s", personId));
+                throw new InvalidInputException("invalid person id");
+            }
+            else {
+                QualificationDTO qualificationDTO = QualificationDTO.builder()
+                        .name(customerObj.getFirstName() + " " + customerObj.getFirstName())
+                        .qualifications(QualificationDTO.Qualifications.builder()
+                                .school(QualificationDTO.School.builder()
+                                        .name(customerObj.getEducation().getSchool().getName() )
+                                        .address(customerObj.getEducation().getSchool().getAddress())
+                                        .build())
+                                .college(QualificationDTO.College.builder()
+                                        .name( customerObj.getEducation().getCollage().getName())
+                                        .address(customerObj.getEducation().getCollage().getAddress())
+                                        .degree( customerObj.getEducation().getCollage().getDegree())
+                                        .build())
+                                .build()).build();
 
-               return qualificationDTO;
-           }
-       }
-       catch(InvalidInputException exp){
-           throw exp;
-       }
-       catch(Exception e){
-           log.error(String.format("Exception in getCustomerQualificationsDetails function: %s", e.getMessage()), e);
-           throw new InternalException("Internal Server Error");
-       }
+                return qualificationDTO;
+            }
+        }
+        catch(InvalidInputException exp){
+            throw exp;
+        }
+        catch(Exception e){
+            log.error(String.format("Exception in getCustomerQualificationsDetails function: %s", e.getMessage()), e);
+            throw new InternalException("Internal Server Error");
+        }
     }
 
     /**
@@ -188,38 +184,33 @@ public class CustomerManagementService {
      */
     public CustomerDTO patchBankDetails(PatchBankDetailDTO pathchBankDetailDTO) throws InvalidInputException, InternalException {
         try{
-            JSONObject customerObj = customerManagementRepository.readCustomerData();
-            if(!pathchBankDetailDTO.getPersonId().equals((String) customerObj.get("personId"))) {
+            Customer customerObj = customerManagementRepository.readCustomerData();
+            if(!pathchBankDetailDTO.getPersonId().equals((String) customerObj.getPersonId())) {
                 log.error(String.format("Invalid person id: %s", pathchBankDetailDTO.getPersonId()));
                 throw new InvalidInputException("invalid person id");
             }
             else {
-                JSONObject educationObject = (JSONObject) customerObj.get("education");
-                JSONObject schoolObject = (JSONObject) educationObject.get("school");
-                JSONObject collageObject = (JSONObject) educationObject.get("collage");
-                JSONArray phoneArray = (JSONArray) customerObj.get("phone");
-                JSONObject bankObject = (JSONObject) customerObj.get("bank");
                 CustomerDTO customerDTO = CustomerDTO.builder()
-                        .firstName((String) customerObj.get("firstName"))
-                        .lastName((String) customerObj.get("lastName"))
-                        .personId((String) customerObj.get("personId"))
-                        .dob((String) customerObj.get("dob"))
-                        .streetName((String) customerObj.get("streetName"))
-                        .houseNumber((String) customerObj.get("houseNumber"))
-                        .city((String) customerObj.get("city"))
-                        .country((String) customerObj.get("country"))
-                        .countryCode((String) customerObj.get("countryCode"))
-                        .phone(generatePhonenumbers(phoneArray))
+                        .firstName( customerObj.getFirstName())
+                        .lastName((String) customerObj.getLastName())
+                        .personId((String) customerObj.getPersonId())
+                        .dob((String) customerObj.getDob())
+                        .streetName((String) customerObj.getStreetName())
+                        .houseNumber((String) customerObj.getHouseNumber())
+                        .city((String) customerObj.getCity())
+                        .country((String) customerObj.getCountry())
+                        .countryCode((String) customerObj.getCountryCode())
+                        .phone(generatePhonenumbers(customerObj.getPhone()))
                         .bank(generateBankDetails(pathchBankDetailDTO))
                         .education(CustomerDTO.Education.builder()
                                 .school(CustomerDTO.School.builder()
-                                        .name((String) schoolObject.get("name"))
-                                        .address((String) schoolObject.get("address"))
+                                        .name(customerObj.getEducation().getCollage().getName() )
+                                        .address( customerObj.getEducation().getCollage().getAddress())
                                         .build())
                                 .college(CustomerDTO.College.builder()
-                                        .name((String) collageObject.get("name"))
-                                        .address((String) collageObject.get("address"))
-                                        .degree((String) collageObject.get("degree"))
+                                        .name(customerObj.getEducation().getCollage().getName())
+                                        .address(customerObj.getEducation().getCollage().getAddress())
+                                        .degree(customerObj.getEducation().getCollage().getDegree())
                                         .build())
                                 .build()).build();
 
@@ -240,7 +231,7 @@ public class CustomerManagementService {
      * @parameter JSONArray object which contains phone numbers of a customer.
      * @return List of String
      */
-    private static List<String> generatePhonenumbers(JSONArray phoneArray) {
+    private static List<String> generatePhonenumbers(List<String> phoneArray) {
 
         List<String> contactList = new ArrayList<>();
 
@@ -287,5 +278,3 @@ public class CustomerManagementService {
         return creditCardList;
     }
 }
-
-
