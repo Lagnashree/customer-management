@@ -15,14 +15,15 @@ public class CustomerManagementRepository {
      * @throws IOException If there is IOEception while reading the JSON file
      * @throws ParseException If there is parsing exception while reading the JSON contain.
      */
-    public JSONObject readCustomerData() throws IOException, ParseException {
-            String filePath = "src/main/resources/Person.json";
-        try (FileReader reader = new FileReader(filePath)) {
-            JSONParser jsonParser = new JSONParser();
-            Object obj = jsonParser.parse(reader);
-            return (JSONObject) obj;
+    private static final String FILE_PATH = "src/main/resources/Person.json";
+
+    public Customer readCustomerData() throws IOException, ParseException {
+        try (InputStream inputStream = new FileInputStream(FILE_PATH)) {
+            ObjectMapper objectMapper = new ObjectMapper();
+            Customer customer = objectMapper.readValue(inputStream, Customer.class);
+            return customer;
         } catch (IOException e) {
-            throw new IOException("Error reading customer data file", e);
+            throw new IOException("Error reading customer data from file ", e);
         }
     }
 }
