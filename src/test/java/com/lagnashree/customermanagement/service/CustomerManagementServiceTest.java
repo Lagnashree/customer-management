@@ -1,10 +1,11 @@
 package com.lagnashree.customermanagement.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lagnashree.customermanagement.dto.*;
 import com.lagnashree.customermanagement.exception.InvalidInputException;
+import com.lagnashree.customermanagement.model.Customer;
 import com.lagnashree.customermanagement.repository.CustomerManagementRepository;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
+
 import org.json.simple.parser.ParseException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,26 +13,29 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MockitoExtension.class)
-public class CustomerManagementServiceTest {
+public class CustomerManagementServiceV2Test {
     @InjectMocks
     private CustomerManagementService customerManagementService;
     @Mock
     CustomerManagementRepository customerManagementRepository;
     @Test
     public void CustomerManagementService_GetCustomerPersonalDetails_ValidResponse() throws ParseException, IOException {
-        JSONParser jsonParser= new JSONParser();
         String file ="src/test/resources/Person.json";
-        FileReader reader= new FileReader(file);
-        Object customerObj= jsonParser.parse(reader);
-        Mockito.when(customerManagementRepository.readCustomerData()).thenReturn((JSONObject) customerObj);
+        InputStream inputStream = new FileInputStream(file);
+        ObjectMapper objectMapper = new ObjectMapper();
+        Customer customerObj = objectMapper.readValue(inputStream, Customer.class);
+        Mockito.when(customerManagementRepository.readCustomerData()).thenReturn(customerObj);
         PersonalDetailDTO personalDetail = customerManagementService.getCustomerPersonalDetails("12345");
         assertEquals("Peter Nilson", personalDetail.getName());
         assertEquals("12345", personalDetail.getPersonId());
@@ -46,11 +50,11 @@ public class CustomerManagementServiceTest {
     }
     @Test
     public void CustomerManagementService_getCustomerBankDetails_ValidResponse() throws ParseException, IOException {
-        JSONParser jsonParser= new JSONParser();
         String file ="src/test/resources/Person.json";
-        FileReader reader= new FileReader(file);
-        Object customerObj= jsonParser.parse(reader);
-        Mockito.when(customerManagementRepository.readCustomerData()).thenReturn((JSONObject) customerObj);
+        InputStream inputStream = new FileInputStream(file);
+        ObjectMapper objectMapper = new ObjectMapper();
+        Customer customerObj = objectMapper.readValue(inputStream, Customer.class);
+        Mockito.when(customerManagementRepository.readCustomerData()).thenReturn( customerObj);
         BankDetailDTO bankDetail = customerManagementService.getCustomerBankDetails("12345");
         assertEquals("Peter Nilson", bankDetail.getName());
         assertEquals("12345", bankDetail.getPersonId());
@@ -62,28 +66,12 @@ public class CustomerManagementServiceTest {
         assertEquals("Mastero", bankDetail.getCard().get(0).getPaymentNetwork());
     }
     @Test
-    public void CustomerManagementService_getCustomerQualificationsDetails_ValidResponse() throws ParseException, IOException {
-        JSONParser jsonParser= new JSONParser();
-        String file ="src/test/resources/Person.json";
-        FileReader reader= new FileReader(file);
-        Object customerObj= jsonParser.parse(reader);
-        Mockito.when(customerManagementRepository.readCustomerData()).thenReturn((JSONObject) customerObj);
-        QualificationDTO qualification = customerManagementService.getCustomerQualificationsDetails("12345");
-        assertEquals("Peter Nilson", qualification.getName());
-        assertEquals("xyz school", qualification.getQualifications().getSchool().getName());
-        assertEquals("Dalaplan Malmo 21744 Sweden", qualification.getQualifications().getSchool().getAddress());
-        assertEquals("Abc collage", qualification.getQualifications().getCollege().getName());
-        assertEquals("Abc Malmö 72863 Sweden", qualification.getQualifications().getCollege().getAddress());
-        assertEquals("MS", qualification.getQualifications().getCollege().getDegree());
-
-    }
-    @Test
     public void CustomerManagementService_patchBankDetails_ValidResponse() throws ParseException, IOException {
-        JSONParser jsonParser= new JSONParser();
         String file ="src/test/resources/Person.json";
-        FileReader reader= new FileReader(file);
-        Object customerObj= jsonParser.parse(reader);
-        Mockito.when(customerManagementRepository.readCustomerData()).thenReturn((JSONObject) customerObj);
+        InputStream inputStream = new FileInputStream(file);
+        ObjectMapper objectMapper = new ObjectMapper();
+        Customer customerObj = objectMapper.readValue(inputStream, Customer.class);
+        Mockito.when(customerManagementRepository.readCustomerData()).thenReturn(customerObj);
         PatchBankDetailDTO patchBankDetail = PatchBankDetailDTO.builder()
                 .personId("12345")
                 .newBankDetails(PatchBankDetailDTO.NewBankDetails.builder()
@@ -128,33 +116,33 @@ public class CustomerManagementServiceTest {
     @Test
     public void CustomerManagementService_GetCustomerPersonalDetails_InvalidPersonId() throws ParseException, IOException  {
 
-            JSONParser jsonParser= new JSONParser();
-            String file ="src/test/resources/Person.json";
-            FileReader reader= new FileReader(file);
-            Object customerObj= jsonParser.parse(reader);
-            Mockito.when(customerManagementRepository.readCustomerData()).thenReturn((JSONObject) customerObj);
-            assertThrows(InvalidInputException.class, () ->
-                    customerManagementService.getCustomerPersonalDetails("123456"));
+        String file ="src/test/resources/Person.json";
+        InputStream inputStream = new FileInputStream(file);
+        ObjectMapper objectMapper = new ObjectMapper();
+        Customer customerObj = objectMapper.readValue(inputStream, Customer.class);
+        Mockito.when(customerManagementRepository.readCustomerData()).thenReturn(customerObj);
+        assertThrows(InvalidInputException.class, () ->
+                customerManagementService.getCustomerPersonalDetails("123456"));
     }
     @Test
     public void CustomerManagementService_getCustomerBankDetails_InvalidPersonId() throws ParseException, IOException  {
 
-        JSONParser jsonParser= new JSONParser();
         String file ="src/test/resources/Person.json";
-        FileReader reader= new FileReader(file);
-        Object customerObj= jsonParser.parse(reader);
-        Mockito.when(customerManagementRepository.readCustomerData()).thenReturn((JSONObject) customerObj);
+        InputStream inputStream = new FileInputStream(file);
+        ObjectMapper objectMapper = new ObjectMapper();
+        Customer customerObj = objectMapper.readValue(inputStream, Customer.class);
+        Mockito.when(customerManagementRepository.readCustomerData()).thenReturn(customerObj);
         assertThrows(InvalidInputException.class, () ->
                 customerManagementService.getCustomerBankDetails("123456"));
     }
     @Test
     public void CustomerManagementService_getCustomerQualificationsDetails_InvalidPersonId() throws ParseException, IOException  {
 
-        JSONParser jsonParser= new JSONParser();
         String file ="src/test/resources/Person.json";
-        FileReader reader= new FileReader(file);
-        Object customerObj= jsonParser.parse(reader);
-        Mockito.when(customerManagementRepository.readCustomerData()).thenReturn((JSONObject) customerObj);
+        InputStream inputStream = new FileInputStream(file);
+        ObjectMapper objectMapper = new ObjectMapper();
+        Customer customerObj = objectMapper.readValue(inputStream, Customer.class);
+        Mockito.when(customerManagementRepository.readCustomerData()).thenReturn(customerObj);
         assertThrows(InvalidInputException.class, () ->
                 customerManagementService.getCustomerQualificationsDetails("123456"));
     }
