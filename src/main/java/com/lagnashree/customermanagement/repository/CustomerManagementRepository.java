@@ -6,8 +6,8 @@ import org.springframework.stereotype.Repository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lagnashree.customermanagement.model.Customer;
 
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+
 @Repository
 public class CustomerManagementRepository {
 
