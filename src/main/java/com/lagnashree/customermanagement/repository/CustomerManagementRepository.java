@@ -3,6 +3,8 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.stereotype.Repository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lagnashree.customermanagement.model.Customer;
 
 import java.io.FileReader;
 import java.io.IOException;
